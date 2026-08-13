@@ -1,13 +1,13 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   src/app/admin/actions.ts — Server Actions پنل ادمین
-   همه عملیات مهم (لاگین، لاگ‌اوت، آپدیت شماره، آپلود رزومه) اینجاست.
-   این فایل فقط روی سرور اجرا می‌شه — هیچ‌وقت به client نمی‌رسه.
+   src/app/admin/actions.ts — Admin panel Server Actions
+   All mutations (login, logout, phone update, resume upload/delete) live here.
+   This file runs server-side only — never sent to the client.
    ───────────────────────────────────────────────────────────────────────────── */
 
 "use server";
 
-import { cookies }    from "next/headers";
-import { redirect }   from "next/navigation";
+import { cookies }       from "next/headers";
+import { redirect }      from "next/navigation";
 import { writeFileSync } from "fs";
 
 import {
@@ -24,7 +24,7 @@ import {
 } from "@/lib/config";
 
 /* ══════════════════════════════════════════════════════════
-   ۱. لاگین — پسورد رو بررسی می‌کنه و کوکی session می‌ذاره
+   1. Login — validates password and sets session cookie
    ══════════════════════════════════════════════════════════ */
 export async function loginAction(
   _prevState: { error: string } | null,
@@ -32,31 +32,30 @@ export async function loginAction(
 ): Promise<{ error: string } | null> {
   const password = String(formData.get("password") ?? "");
 
-  /* هش پسورد وارد‌شده با هش پسورد درست مقایسه می‌شه */
+  /* Hash the submitted password and compare to the expected hash */
   const inputHash    = hashPassword(password);
   const expectedHash = getExpectedHash();
 
   if (inputHash !== expectedHash) {
-    /* پسورد اشتباه */
-    return { error: "پسورد اشتباه است. دوباره تلاش کنید." };
+    return { error: "Incorrect password. Please try again." };
   }
 
-  /* لاگین موفق — کوکی httpOnly ست می‌کنیم */
+  /* Login successful — set an httpOnly session cookie */
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, expectedHash, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge:   60 * 60 * 8, /* 8 ساعت */
+    maxAge:   60 * 60 * 8, /* 8 hours */
     path:     "/",
   });
 
-  /* ریدایرکت به داشبورد */
+  /* Redirect to the dashboard */
   redirect("/admin/dashboard");
 }
 
 /* ══════════════════════════════════════════════════════════
-   ۲. لاگ‌اوت — کوکی session رو پاک می‌کنه
+   2. Logout — clears the session cookie
    ══════════════════════════════════════════════════════════ */
 export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
@@ -65,86 +64,84 @@ export async function logoutAction(): Promise<void> {
 }
 
 /* ══════════════════════════════════════════════════════════
-   ۳. آپدیت شماره تلفن
+   3. Update phone number
    ══════════════════════════════════════════════════════════ */
 export async function updatePhoneAction(
   _prevState: { error?: string; success?: string } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: string }> {
-  /* بررسی احراز هویت */
+  /* Guard: require authentication */
   if (!(await isAuthenticated())) {
-    return { error: "دسترسی غیرمجاز. لطفاً دوباره لاگین کنید." };
+    return { error: "Unauthorized. Please log in again." };
   }
 
   const phone = String(formData.get("phone") ?? "").trim();
 
-  /* اعتبارسنجی ساده شماره */
+  /* Basic validation */
   if (!phone || phone.length < 7) {
-    return { error: "شماره تلفن معتبر وارد کنید." };
+    return { error: "Please enter a valid phone number." };
   }
 
-  /* ذخیره در config */
+  /* Persist to config */
   const config = getConfig();
   config.phone  = phone;
   saveConfig(config);
 
-  return { success: `شماره با موفقیت به "${phone}" تغییر کرد.` };
+  return { success: `Phone number updated to "${phone}".` };
 }
 
 /* ══════════════════════════════════════════════════════════
-   ۴. آپلود رزومه (فایل PDF)
+   4. Upload resume (PDF file)
    ══════════════════════════════════════════════════════════ */
 export async function uploadResumeAction(
   _prevState: { error?: string; success?: string } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: string }> {
-  /* بررسی احراز هویت */
+  /* Guard: require authentication */
   if (!(await isAuthenticated())) {
-    return { error: "دسترسی غیرمجاز. لطفاً دوباره لاگین کنید." };
+    return { error: "Unauthorized. Please log in again." };
   }
 
   const file = formData.get("resume") as File | null;
 
-  /* بررسی وجود فایل */
+  /* Validate file presence */
   if (!file || file.size === 0) {
-    return { error: "هیچ فایلی انتخاب نشده." };
+    return { error: "No file selected." };
   }
 
-  /* فقط PDF قبول می‌کنیم */
+  /* Only PDF files accepted */
   if (file.type !== "application/pdf") {
-    return { error: "فقط فایل PDF مجاز است." };
+    return { error: "Only PDF files are accepted." };
   }
 
-  /* حداکثر حجم: 10MB */
+  /* Maximum size: 10 MB */
   const MAX_SIZE = 10 * 1024 * 1024;
   if (file.size > MAX_SIZE) {
-    return { error: "حجم فایل نباید بیشتر از 10MB باشد." };
+    return { error: "File size must not exceed 10 MB." };
   }
 
-  /* خواندن و ذخیره فایل در public/ */
+  /* Read the file buffer and write to public/ */
   const buffer = Buffer.from(await file.arrayBuffer());
   writeFileSync(RESUME_PATH, buffer);
 
-  /* آپدیت config */
-  const config              = getConfig();
-  config.resumeAvailable    = true;
-  config.resumeFileName     = file.name;
+  /* Update config */
+  const config           = getConfig();
+  config.resumeAvailable = true;
+  config.resumeFileName  = file.name;
   saveConfig(config);
 
-  return {
-    success: `رزومه "${file.name}" با موفقیت آپلود شد.`,
-  };
+  return { success: `Resume "${file.name}" uploaded successfully.` };
 }
 
 /* ══════════════════════════════════════════════════════════
-   ۵. حذف رزومه
+   5. Delete resume
    ══════════════════════════════════════════════════════════ */
 export async function deleteResumeAction(): Promise<{
   error?: string;
   success?: string;
 }> {
   if (!(await isAuthenticated())) {
-    return { error: "دسترسی غیرمجاز." };
+    return { error: "Unauthorized." };
   }
 
   const { unlinkSync, existsSync } = await import("fs");
@@ -158,5 +155,5 @@ export async function deleteResumeAction(): Promise<{
   config.resumeFileName  = "";
   saveConfig(config);
 
-  return { success: "رزومه با موفقیت حذف شد." };
+  return { success: "Resume deleted successfully." };
 }

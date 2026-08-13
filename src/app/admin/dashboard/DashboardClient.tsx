@@ -1,15 +1,17 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   src/app/admin/dashboard/DashboardClient.tsx — داشبورد (Client Component)
-   رابط کاربری کامل پنل ادمین با سه بخش:
-     ۱. آپدیت شماره تلفن
-     ۲. آپلود رزومه
-     ۳. لاگ‌اوت
+   src/app/admin/dashboard/DashboardClient.tsx — Dashboard (Client Component)
+   Full admin panel UI with three sections:
+     1. Update phone number
+     2. Upload / delete resume
+     3. Logout
    ───────────────────────────────────────────────────────────────────────────── */
 
 "use client";
 
-import { useActionState, useRef, useState }   from "react";
-import { Phone, FileText, LogOut, Upload, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { useActionState, useRef, useState } from "react";
+import {
+  Phone, FileText, LogOut, Upload, Trash2, CheckCircle, AlertCircle,
+} from "lucide-react";
 import {
   updatePhoneAction,
   uploadResumeAction,
@@ -17,16 +19,16 @@ import {
   logoutAction,
 } from "../actions";
 
-/* ── نوع props دریافتی از server component ── */
+/* ── Props received from the server component ── */
 interface DashboardClientProps {
-  currentPhone:   string;
+  currentPhone:    string;
   resumeAvailable: boolean;
   resumeFileName:  string;
 }
 
-/* ──────────────────────────────
-   کامپوننت نمایش پیام نتیجه
-   ────────────────────────────── */
+/* ──────────────────────────────────────────
+   Result banner — shows success / error
+   ────────────────────────────────────────── */
 function ResultBanner({
   state,
 }: {
@@ -36,9 +38,9 @@ function ResultBanner({
 
   if (state.success) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 rounded-sm
+      <div className="flex items-center gap-2 px-4 py-3 rounded-sm mt-4
                       bg-emerald-900/25 border border-emerald-500/30 text-emerald-400
-                      text-sm font-inter mt-4">
+                      text-sm font-inter">
         <CheckCircle size={16} />
         {state.success}
       </div>
@@ -47,9 +49,9 @@ function ResultBanner({
 
   if (state.error) {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 rounded-sm
+      <div className="flex items-center gap-2 px-4 py-3 rounded-sm mt-4
                       bg-red-900/25 border border-red-500/30 text-red-400
-                      text-sm font-inter mt-4">
+                      text-sm font-inter">
         <AlertCircle size={16} />
         {state.error}
       </div>
@@ -59,14 +61,14 @@ function ResultBanner({
   return null;
 }
 
-/* ── کلاس مشترک فیلدهای input ── */
+/* ── Shared input class string ── */
 const inputCls =
   "w-full px-4 py-3 rounded-sm bg-[#0D1B2A] border border-[#E8B84B]/15 text-[#F5F0E8] " +
   "font-inter text-sm placeholder:text-[#DDD8CF]/35 " +
   "focus:outline-none focus:border-[#E8B84B]/60 focus:ring-1 focus:ring-[#E8B84B]/20 " +
   "hover:border-[#E8B84B]/30 transition-all duration-200";
 
-/* ── کلاس مشترک کارت‌های بخش‌ها ── */
+/* ── Shared card class string ── */
 const cardCls =
   "bg-[#112233] border border-[#E8B84B]/10 rounded-lg p-6 md:p-8";
 
@@ -75,38 +77,38 @@ export default function DashboardClient({
   resumeAvailable,
   resumeFileName,
 }: DashboardClientProps) {
-  /* ── state برای بخش شماره تلفن ── */
+  /* ── Phone section state ── */
   const [phoneState, phoneAction, phonePending] = useActionState(
     updatePhoneAction,
     null
   );
 
-  /* ── state برای بخش آپلود رزومه ── */
+  /* ── Resume upload section state ── */
   const [resumeState, resumeAction, resumePending] = useActionState(
     uploadResumeAction,
     null
   );
 
-  /* ── state برای حذف رزومه ── */
+  /* ── Resume delete state ── */
   const [deleteState, setDeleteState] = useState<{
     error?: string;
     success?: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  /* ── ref برای نمایش نام فایل انتخاب‌شده ── */
+  /* ── Track the selected file name for the upload area label ── */
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<string>("");
 
-  /* ── وقتی فایل انتخاب می‌شه ── */
+  /* ── Update the displayed filename when the user picks a file ── */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setSelectedFile(file ? file.name : "");
   };
 
-  /* ── حذف رزومه ── */
+  /* ── Delete resume handler ── */
   const handleDelete = async () => {
-    if (!confirm("آیا مطمئنید که می‌خواهید رزومه را حذف کنید؟")) return;
+    if (!confirm("Are you sure you want to delete the current resume?")) return;
     setDeleting(true);
     const result = await deleteResumeAction();
     setDeleteState(result);
@@ -116,12 +118,7 @@ export default function DashboardClient({
     }
   };
 
-  /* ── آیا رزومه موجوده (با توجه به آخرین عملیات) ── */
-  const resumeExists =
-    resumeAvailable &&
-    !resumeState?.success && // بعد از آپلود موفق، فرض می‌کنیم هست
-    !deleteState?.success;    // بعد از حذف موفق، فرض می‌کنیم نیست
-
+  /* ── Whether a resume is currently available (accounting for local state) ── */
   const resumeExistsNow =
     (resumeAvailable && !deleteState?.success) || resumeState?.success != null;
 
@@ -129,58 +126,55 @@ export default function DashboardClient({
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
       {/* ══════════════════════════════════════════
-          بخش ۱: آپدیت شماره تلفن
+          Section 1 — Phone number
           ══════════════════════════════════════════ */}
       <section className={cardCls}>
-        {/* هدر بخش */}
+        {/* Section header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full bg-[#E8B84B]/10 flex items-center justify-center flex-shrink-0">
             <Phone size={18} className="text-[#E8B84B]" strokeWidth={1.5} />
           </div>
           <div>
             <h2 className="font-playfair text-xl font-bold text-[#F5F0E8]">
-              شماره تماس
+              Contact Phone
             </h2>
             <p className="text-xs text-[#DDD8CF]/50 font-inter mt-0.5">
-              شماره نمایش داده‌شده در صفحه Contact سایت
+              The number displayed in the Contact section of the site
             </p>
           </div>
         </div>
 
-        {/* فرم شماره تلفن */}
+        {/* Phone update form */}
         <form action={phoneAction}>
           <div className="space-y-4">
+            {/* Current number badge */}
             <div>
-              <label
-                htmlFor="admin-phone"
-                className="block text-xs font-medium text-[#DDD8CF]/55 font-inter
-                           uppercase tracking-wider mb-2"
-              >
-                شماره فعلی
-              </label>
-
-              {/* نمایش شماره فعلی */}
-              <div className="mb-3 px-3 py-2 rounded-sm bg-[#E8B84B]/5 border border-[#E8B84B]/15
+              <p className="text-xs font-medium text-[#DDD8CF]/55 font-inter
+                            uppercase tracking-wider mb-2">
+                Current number
+              </p>
+              <div className="mb-1 px-3 py-2 rounded-sm bg-[#E8B84B]/5 border border-[#E8B84B]/15
                               text-[#E8B84B] text-sm font-inter font-medium inline-flex items-center gap-2">
                 <Phone size={13} strokeWidth={1.5} />
                 {currentPhone}
               </div>
             </div>
 
+            {/* New number input */}
             <div>
               <label
                 htmlFor="admin-phone"
                 className="block text-xs font-medium text-[#DDD8CF]/55 font-inter
                            uppercase tracking-wider mb-2"
               >
-                شماره جدید
+                New number
               </label>
               <input
                 id="admin-phone"
                 name="phone"
                 type="tel"
                 defaultValue={currentPhone}
-                placeholder="مثال: 647-983-2668"
+                placeholder="e.g. 647-983-2668"
                 className={inputCls}
                 required
               />
@@ -196,13 +190,13 @@ export default function DashboardClient({
                          disabled:opacity-60 disabled:cursor-not-allowed
                          transition-all duration-200"
             >
-              {phonePending ? (
+              {phonePending && (
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-              ) : null}
-              {phonePending ? "در حال ذخیره..." : "ذخیره شماره"}
+              )}
+              {phonePending ? "Saving..." : "Save Number"}
             </button>
           </div>
 
@@ -211,35 +205,37 @@ export default function DashboardClient({
       </section>
 
       {/* ══════════════════════════════════════════
-          بخش ۲: آپلود رزومه
+          Section 2 — Resume upload
           ══════════════════════════════════════════ */}
       <section className={cardCls}>
-        {/* هدر بخش */}
+        {/* Section header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full bg-[#E8B84B]/10 flex items-center justify-center flex-shrink-0">
             <FileText size={18} className="text-[#E8B84B]" strokeWidth={1.5} />
           </div>
           <div>
             <h2 className="font-playfair text-xl font-bold text-[#F5F0E8]">
-              رزومه
+              Resume
             </h2>
             <p className="text-xs text-[#DDD8CF]/50 font-inter mt-0.5">
-              فایل PDF رزومه برای دانلود توسط بازدیدکنندگان
+              PDF file available for download by site visitors
             </p>
           </div>
         </div>
 
-        {/* وضعیت فعلی رزومه */}
+        {/* Current resume status */}
         {resumeExistsNow && (
           <div className="mb-5 flex items-center justify-between
                           px-4 py-3 rounded-sm bg-emerald-900/15 border border-emerald-500/20">
             <div className="flex items-center gap-2 text-emerald-400 text-sm font-inter">
               <FileText size={15} strokeWidth={1.5} />
               <span>
-                {resumeState?.success ? "رزومه جدید آپلود شد" : `رزومه موجود: ${resumeFileName}`}
+                {resumeState?.success
+                  ? "New resume uploaded"
+                  : `Current file: ${resumeFileName}`}
               </span>
             </div>
-            {/* دکمه حذف */}
+            {/* Delete button */}
             <button
               type="button"
               onClick={handleDelete}
@@ -248,27 +244,27 @@ export default function DashboardClient({
                          hover:text-red-400 transition-colors duration-200 font-inter"
             >
               <Trash2 size={13} strokeWidth={1.5} />
-              {deleting ? "حذف..." : "حذف رزومه"}
+              {deleting ? "Deleting..." : "Delete"}
             </button>
           </div>
         )}
 
         {deleteState && <ResultBanner state={deleteState} />}
 
-        {/* فرم آپلود */}
+        {/* Upload form */}
         <form action={resumeAction}>
           <div className="space-y-4">
-            {/* منطقه drag-and-drop/انتخاب فایل */}
+            {/* Drop zone / file picker */}
             <div>
               <label
                 htmlFor="admin-resume-file"
                 className="block text-xs font-medium text-[#DDD8CF]/55 font-inter
                            uppercase tracking-wider mb-2"
               >
-                {resumeExistsNow ? "جایگزین کردن رزومه" : "آپلود رزومه"}
+                {resumeExistsNow ? "Replace Resume" : "Upload Resume"}
               </label>
 
-              {/* منطقه آپلود با استایل سفارشی */}
+              {/* Styled upload area */}
               <label
                 htmlFor="admin-resume-file"
                 className="flex flex-col items-center justify-center
@@ -290,10 +286,10 @@ export default function DashboardClient({
                 ) : (
                   <>
                     <p className="text-[#DDD8CF]/55 text-sm font-inter mb-1">
-                      کلیک کنید یا فایل را اینجا رها کنید
+                      Click to select or drag a file here
                     </p>
                     <p className="text-[#DDD8CF]/30 text-xs font-inter">
-                      فقط PDF · حداکثر ۱۰MB
+                      PDF only · Max 10 MB
                     </p>
                   </>
                 )}
@@ -329,7 +325,7 @@ export default function DashboardClient({
               ) : (
                 <Upload size={15} strokeWidth={2} />
               )}
-              {resumePending ? "در حال آپلود..." : "آپلود رزومه"}
+              {resumePending ? "Uploading..." : "Upload Resume"}
             </button>
           </div>
 
@@ -338,13 +334,13 @@ export default function DashboardClient({
       </section>
 
       {/* ══════════════════════════════════════════
-          بخش ۳: لاگ‌اوت
+          Section 3 — Logout
           ══════════════════════════════════════════ */}
       <section className={`${cardCls} flex items-center justify-between`}>
         <div>
-          <p className="text-[#F5F0E8] font-inter text-sm font-medium">خروج از پنل ادمین</p>
+          <p className="text-[#F5F0E8] font-inter text-sm font-medium">Sign out</p>
           <p className="text-[#DDD8CF]/40 text-xs font-inter mt-0.5">
-            session پاک می‌شه و برمی‌گردی به صفحه لاگین
+            Clears your session and returns you to the login page
           </p>
         </div>
 
@@ -358,7 +354,7 @@ export default function DashboardClient({
                        transition-all duration-200 text-sm font-inter font-medium"
           >
             <LogOut size={15} strokeWidth={1.5} />
-            خروج
+            Sign Out
           </button>
         </form>
       </section>

@@ -1,51 +1,51 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    src/lib/config.ts
-   توابع خواندن و نوشتن فایل data/site-config.json.
-   این فایل اطلاعات سایت (شماره تلفن، وضعیت رزومه) رو نگه می‌داره.
+   Helpers for reading and writing data/site-config.json.
+   This file stores site-wide settings: phone number and resume availability.
    ───────────────────────────────────────────────────────────────────────────── */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 
-/* ── آدرس فایل config ── */
+/* ── Path to the config file ── */
 const CONFIG_PATH = join(process.cwd(), "data", "site-config.json");
 const DATA_DIR    = join(process.cwd(), "data");
 
-/* ── نوع داده‌های تنظیمات سایت ── */
+/* ── Shape of the site config object ── */
 export interface SiteConfig {
   phone:           string;
   resumeAvailable: boolean;
   resumeFileName:  string;
 }
 
-/* ── مقادیر پیش‌فرض ── */
+/* ── Default values used when the config file doesn't exist yet ── */
 const DEFAULT_CONFIG: SiteConfig = {
   phone:           "647-983-2668",
   resumeAvailable: false,
   resumeFileName:  "",
 };
 
-/* ── خواندن config از فایل JSON ── */
+/* ── Read config from the JSON file ── */
 export function getConfig(): SiteConfig {
   try {
     if (!existsSync(CONFIG_PATH)) return DEFAULT_CONFIG;
     const raw = readFileSync(CONFIG_PATH, "utf-8");
     return { ...DEFAULT_CONFIG, ...JSON.parse(raw) } as SiteConfig;
   } catch {
-    /* اگر فایل خراب بود، مقدار پیش‌فرض برمی‌گردونه */
+    /* Return defaults if the file is missing or malformed */
     return DEFAULT_CONFIG;
   }
 }
 
-/* ── ذخیره config در فایل JSON ── */
+/* ── Persist config to the JSON file ── */
 export function saveConfig(config: SiteConfig): void {
-  /* اگر پوشه data وجود نداشت، بسازش */
+  /* Create the data directory if it doesn't exist */
   if (!existsSync(DATA_DIR)) {
     mkdirSync(DATA_DIR, { recursive: true });
   }
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8");
 }
 
-/* ── آدرس فایل رزومه در public ── */
-export const RESUME_PATH     = join(process.cwd(), "public", "sisi-resume.pdf");
-export const RESUME_PUBLIC   = "/sisi-resume.pdf";
+/* ── Absolute path and public URL for the resume PDF ── */
+export const RESUME_PATH   = join(process.cwd(), "public", "sisi-resume.pdf");
+export const RESUME_PUBLIC = "/sisi-resume.pdf";

@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   src/app/admin/dashboard/page.tsx — داشبورد ادمین (Server Component)
-   اگر لاگین نشده باشه، ریدایرکت به /admin می‌شه.
-   اطلاعات config رو از فایل می‌خونه و به کامپوننت‌های client پاس می‌ده.
+   src/app/admin/dashboard/page.tsx — Admin dashboard (Server Component)
+   Redirects to /admin if the user is not authenticated.
+   Reads the current config and passes it as props to the client UI component.
    ───────────────────────────────────────────────────────────────────────────── */
 
 import { redirect }        from "next/navigation";
@@ -10,7 +10,7 @@ import { getConfig }       from "@/lib/config";
 import DashboardClient     from "./DashboardClient";
 import type { Metadata }   from "next";
 
-/* ── این صفحه نباید کش بشه چون config ممکنه تغییر کرده باشه ── */
+/* ── Never cache this page — config may change between requests ── */
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -19,17 +19,17 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  /* اگر لاگین نشده، برگرد به صفحه لاگین */
+  /* If not logged in, redirect to the login page */
   if (!(await isAuthenticated())) {
     redirect("/admin");
   }
 
-  /* خواندن تنظیمات فعلی سایت */
+  /* Read the current site settings */
   const config = getConfig();
 
   return (
     <main className="min-h-screen bg-[#0D1B2A]">
-      {/* ── هدر داشبورد ── */}
+      {/* ── Dashboard header ── */}
       <header className="border-b border-[#E8B84B]/10 bg-[#090f18]">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div>
@@ -41,19 +41,19 @@ export default async function DashboardPage() {
             </h1>
           </div>
 
-          {/* لینک بازگشت به سایت */}
+          {/* View site link */}
           <a
             href="/"
             target="_blank"
             className="text-xs text-[#DDD8CF]/45 hover:text-[#E8B84B]
                        transition-colors duration-200 font-inter flex items-center gap-1.5"
           >
-            مشاهده سایت ↗
+            View Site ↗
           </a>
         </div>
       </header>
 
-      {/* ── محتوای داشبورد (client component) ── */}
+      {/* ── Dashboard body (client component handles all interactions) ── */}
       <DashboardClient
         currentPhone={config.phone}
         resumeAvailable={config.resumeAvailable}

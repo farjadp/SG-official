@@ -1,7 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    src/components/ResumeDownload.tsx
-   سکشن دانلود رزومه روی صفحه اصلی سایت.
-   اگر رزومه آپلود نشده باشه، یه نوشته placeholder نشون می‌ده.
+   Resume download section on the main site.
+   Shows a download button when a resume has been uploaded via the admin panel;
+   falls back to a "Request CV" contact link when none is available.
    ───────────────────────────────────────────────────────────────────────────── */
 
 "use client";
@@ -10,7 +11,7 @@ import { useEffect, useState } from "react";
 import { motion }              from "framer-motion";
 import { FileText, Download, ArrowRight } from "lucide-react";
 
-/* ── نوع پاسخ API ── */
+/* ── API response shape ── */
 interface ResumeStatus {
   available:   boolean;
   fileName:    string;
@@ -18,11 +19,11 @@ interface ResumeStatus {
 }
 
 export default function ResumeDownload() {
-  /* وضعیت رزومه دریافتی از API */
+  /* Resume availability received from the API */
   const [status, setStatus]   = useState<ResumeStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ── دریافت وضعیت رزومه از API ── */
+  /* ── Fetch resume status on mount ── */
   useEffect(() => {
     fetch("/api/resume-status")
       .then((r) => r.json())
@@ -44,40 +45,35 @@ export default function ResumeDownload() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          /* ── کارت اصلی ── */
+          /* ── Main card ── */
           className="relative overflow-hidden rounded-xl
                      bg-gradient-to-br from-[#112233] to-[#0f1e2e]
                      border border-[#E8B84B]/15
                      p-8 md:p-12
                      shadow-2xl shadow-black/30"
         >
-          {/* ── المان تزئینی: دایره طلایی کمرنگ در گوشه ── */}
+          {/* ── Decorative gold radial glow in corner ── */}
           <div
             className="absolute -top-16 -right-16 w-64 h-64 rounded-full
                        opacity-[0.06] pointer-events-none"
             style={{
-              background:
-                "radial-gradient(circle, #E8B84B 0%, transparent 70%)",
+              background: "radial-gradient(circle, #E8B84B 0%, transparent 70%)",
             }}
             aria-hidden="true"
           />
 
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center
                           gap-8 md:gap-12">
-            {/* ── آیکون PDF ── */}
+            {/* ── PDF icon ── */}
             <div
               className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl
                          bg-[#E8B84B]/10 border border-[#E8B84B]/20
                          flex items-center justify-center"
             >
-              <FileText
-                size={32}
-                className="text-[#E8B84B]"
-                strokeWidth={1.5}
-              />
+              <FileText size={32} className="text-[#E8B84B]" strokeWidth={1.5} />
             </div>
 
-            {/* ── متن ── */}
+            {/* ── Text copy ── */}
             <div className="flex-1">
               <p className="text-[#E8B84B] text-xs font-semibold tracking-[0.2em] uppercase
                             font-inter mb-2">
@@ -92,19 +88,19 @@ export default function ResumeDownload() {
               </p>
             </div>
 
-            {/* ── دکمه دانلود یا placeholder ── */}
+            {/* ── Download button or fallback CTA ── */}
             <div className="flex-shrink-0 w-full md:w-auto">
               {loading ? (
-                /* spinner در حال بارگذاری */
+                /* Loading placeholder */
                 <div className="flex items-center justify-center w-full md:w-48 h-14
                                 rounded-sm bg-[#E8B84B]/10 border border-[#E8B84B]/15
                                 animate-pulse">
                   <span className="text-[#E8B84B]/40 text-sm font-inter">
-                    در حال بارگذاری...
+                    Loading...
                   </span>
                 </div>
               ) : status?.available && status.downloadUrl ? (
-                /* ── دکمه دانلود (وقتی رزومه آپلود شده) ── */
+                /* ── Download button (resume is uploaded) ── */
                 <a
                   href={status.downloadUrl}
                   id="resume-download-button"
@@ -121,7 +117,7 @@ export default function ResumeDownload() {
                   Download Resume
                 </a>
               ) : (
-                /* ── لینک Contact وقتی رزومه هنوز آپلود نشده ── */
+                /* ── Contact link (no resume uploaded yet) ── */
                 <a
                   href="#contact"
                   id="resume-contact-cta"

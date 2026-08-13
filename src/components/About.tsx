@@ -10,8 +10,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-/* ── عکس واقعی سیسی گانگ در /public/sisi-photo.jpg قرار داره ── */
-
 export default function About() {
   return (
     <section
@@ -51,7 +49,7 @@ export default function About() {
                 className="w-full h-full rounded-full overflow-hidden
                            bg-[#112233] flex items-center justify-center"
               >
-                {/* ── عکس واقعی سیسی گانگ ── */}
+                {/* ── Sisi Gong headshot photo ── */}
                 <Image
                   src="/sisi-photo.jpg"
                   alt="Sisi Gong — Program Manager and Ecosystem Builder"

@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   src/app/api/resume-status/route.ts — API عمومی وضعیت رزومه
-   بررسی می‌کنه آیا رزومه آپلود شده یا نه.
-   این endpoint عمومیه و نیاز به احراز هویت ندارد.
+   src/app/api/resume-status/route.ts — Public resume status API
+   Checks whether a resume has been uploaded.
+   This endpoint is public — no authentication required.
    ───────────────────────────────────────────────────────────────────────────── */
 
 import { NextResponse }           from "next/server";
@@ -10,15 +10,15 @@ import { existsSync }             from "fs";
 
 /* ── GET /api/resume-status ── */
 export async function GET() {
-  /* config رو بخون */
+  /* Read the current site config */
   const config = getConfig();
 
-  /* بررسی وجود فیزیکی فایل رزومه */
+  /* Also verify the file physically exists on disk */
   const fileExists = existsSync(RESUME_PATH);
 
   return NextResponse.json({
-    available:    config.resumeAvailable && fileExists,
-    fileName:     config.resumeFileName ?? "",
-    downloadUrl:  config.resumeAvailable && fileExists ? "/sisi-resume.pdf" : null,
+    available:   config.resumeAvailable && fileExists,
+    fileName:    config.resumeFileName ?? "",
+    downloadUrl: config.resumeAvailable && fileExists ? "/sisi-resume.pdf" : null,
   });
 }

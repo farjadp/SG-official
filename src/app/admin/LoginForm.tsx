@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   src/app/admin/LoginForm.tsx — فرم لاگین (Client Component)
-   useActionState برای مدیریت state فرم و نمایش خطا استفاده می‌کنه.
+   src/app/admin/LoginForm.tsx — Login form (Client Component)
+   Uses useActionState to manage form state and display server-side errors.
    ───────────────────────────────────────────────────────────────────────────── */
 
 "use client";
@@ -8,16 +8,16 @@
 import { useActionState } from "react";
 import { loginAction }    from "./actions";
 import { Lock, Eye, EyeOff } from "lucide-react";
-import { useState }      from "react";
+import { useState }       from "react";
 
 export default function AdminLoginForm() {
-  /* state فرم — error از server action برمی‌گرده */
+  /* Form state — errors are returned from the server action */
   const [state, formAction, isPending] = useActionState(loginAction, null);
 
-  /* نمایش / مخفی‌کردن پسورد */
+  /* Show / hide password toggle */
   const [showPassword, setShowPassword] = useState(false);
 
-  /* کلاس‌های مشترک input ها */
+  /* Shared input classes */
   const inputClasses =
     "w-full px-4 py-3.5 pr-12 rounded-sm bg-[#112233] border border-[#E8B84B]/15 text-[#F5F0E8] " +
     "font-inter text-sm placeholder:text-[#DDD8CF]/35 " +
@@ -27,7 +27,7 @@ export default function AdminLoginForm() {
   return (
     <div className="bg-[#112233] border border-[#E8B84B]/12 rounded-lg p-8 shadow-2xl shadow-black/30">
       <form action={formAction} noValidate>
-        {/* ── نمایش خطا ── */}
+        {/* ── Error banner ── */}
         {state?.error && (
           <div
             className="mb-5 px-4 py-3 rounded-sm bg-red-900/25 border border-red-500/30
@@ -39,7 +39,7 @@ export default function AdminLoginForm() {
           </div>
         )}
 
-        {/* ── فیلد پسورد ── */}
+        {/* ── Password field ── */}
         <div className="mb-6">
           <label
             htmlFor="admin-password"
@@ -50,7 +50,7 @@ export default function AdminLoginForm() {
           </label>
 
           <div className="relative">
-            {/* آیکون قفل */}
+            {/* Lock icon */}
             <Lock
               size={16}
               className="absolute left-4 top-1/2 -translate-y-1/2 text-[#DDD8CF]/30"
@@ -64,17 +64,17 @@ export default function AdminLoginForm() {
               required
               autoComplete="current-password"
               autoFocus
-              placeholder="پسورد ادمین را وارد کنید"
+              placeholder="Enter admin password"
               className={`${inputClasses} pl-10`}
             />
 
-            {/* دکمه نمایش/مخفی پسورد */}
+            {/* Show/hide password toggle */}
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               className="absolute right-4 top-1/2 -translate-y-1/2
                          text-[#DDD8CF]/30 hover:text-[#E8B84B] transition-colors duration-200"
-              aria-label={showPassword ? "مخفی کردن پسورد" : "نمایش پسورد"}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <EyeOff size={16} strokeWidth={1.5} />
@@ -85,7 +85,7 @@ export default function AdminLoginForm() {
           </div>
         </div>
 
-        {/* ── دکمه ورود ── */}
+        {/* ── Submit button ── */}
         <button
           id="admin-login-submit"
           type="submit"
@@ -98,7 +98,7 @@ export default function AdminLoginForm() {
                      transition-all duration-200 shadow-lg shadow-[#E8B84B]/15"
         >
           {isPending ? (
-            /* spinner در حین بررسی */
+            /* Loading spinner */
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -106,7 +106,7 @@ export default function AdminLoginForm() {
           ) : (
             <Lock size={15} strokeWidth={2} />
           )}
-          {isPending ? "در حال بررسی..." : "ورود به پنل"}
+          {isPending ? "Verifying..." : "Sign In"}
         </button>
       </form>
     </div>

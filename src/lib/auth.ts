@@ -1,16 +1,16 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    src/lib/auth.ts
-   توابع کمکی authentication برای پنل ادمین.
-   از crypto داخلی Node.js برای هش کردن پسورد استفاده می‌کنه.
+   Authentication helpers for the admin panel.
+   Uses Node.js built-in crypto to hash the admin password.
    ───────────────────────────────────────────────────────────────────────────── */
 
 import { createHash } from "crypto";
-import { cookies } from "next/headers";
+import { cookies }    from "next/headers";
 
-/* ── نام کوکی session ── */
+/* ── Session cookie name ── */
 export const SESSION_COOKIE = "admin_token";
 
-/* ── ساخت هش SHA-256 از پسورد + secret ── */
+/* ── Produce a SHA-256 hash of password + secret ── */
 export function hashPassword(password: string): string {
   const secret = process.env.ADMIN_SECRET ?? "fallback-secret";
   return createHash("sha256")
@@ -18,18 +18,18 @@ export function hashPassword(password: string): string {
     .digest("hex");
 }
 
-/* ── هش پسورد درست رو محاسبه می‌کنه تا باهاش مقایسه بشه ── */
+/* ── Compute the expected hash from env so we can compare against it ── */
 export function getExpectedHash(): string {
   const password = process.env.ADMIN_PASSWORD ?? "admin123";
   return hashPassword(password);
 }
 
-/* ── بررسی می‌کنه آیا کاربر لاگین‌شده یا نه ── */
+/* ── Returns true if the current request carries a valid session cookie ── */
 export async function isAuthenticated(): Promise<boolean> {
-  /* در Next.js 15+ باید cookies() رو await کنیم */
+  /* In Next.js 15+ cookies() must be awaited */
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const token       = cookieStore.get(SESSION_COOKIE)?.value;
 
-  /* کوکی رو با هش پسورد مقایسه می‌کنه */
+  /* Compare the cookie value against the expected hash */
   return token === getExpectedHash();
 }
