@@ -1,0 +1,75 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   globals.css
+   Brand design-system tokens, base resets, and utility overrides.
+   Tailwind v4 uses @import "tailwindcss" instead of @tailwind directives.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+
+/* ── Custom brand colour tokens available as CSS variables ── */
+:root {
+  /* Core palette */
+  --navy:      #0D1B2A; /* Deep navy — primary background          */
+  --gold:      #E8B84B; /* Warm gold — accent / highlights          */
+  --gold-dark: #C99A30; /* Darker gold for hover states             */
+  --cream:     #F5F0E8; /* Off-white — text area / light sections   */
+  --cream-muted: #DDD8CF; /* Slightly darker cream for muted text   */
+
+  /* Semantic aliases */
+  --bg-primary:   var(--navy);
+  --bg-secondary: #112233;   /* Slightly lighter navy for cards      */
+  --text-primary: var(--cream);
+  --text-accent:  var(--gold);
+}
+
+/* ── Tailwind v4 theme extension ── */
+@theme inline {
+  /* Brand colours */
+  --color-navy:        #0D1B2A;
+  --color-gold:        #E8B84B;
+  --color-gold-dark:   #C99A30;
+  --color-cream:       #F5F0E8;
+  --color-cream-muted: #DDD8CF;
+  --color-navy-light:  #112233;
+
+  /* Brand fonts — maps CSS variables injected by next/font to Tailwind utilities */
+  --font-playfair: var(--font-playfair);
+  --font-inter:    var(--font-inter);
+}
+
+/* ── Smooth scroll for anchor navigation ── */
+html {
+  scroll-behavior: smooth;
+  /* Offset for sticky navbar height */
+  scroll-padding-top: 72px;
+}
+
+/* ── Custom scrollbar (webkit) ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* ── Text selection colour ── */
+::selection {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* ── Base body defaults ── */
+body {
+  background-color: var(--navy);
+  color: var(--cream);
+  font-family: var(--font-inter, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
