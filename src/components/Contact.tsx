@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Send, CheckCircle } from "lucide-react";
+import { Mail, Send, CheckCircle, Phone } from "lucide-react";
 
 /* ── Inline LinkedIn SVG (lucide-react v1 dropped brand icons) ── */
 function LinkedinIcon({ size = 18 }: { size?: number }) {
@@ -176,6 +176,33 @@ export default function Contact() {
                 <p className="text-[#F5F0E8] font-inter text-sm font-medium
                               group-hover:text-[#E8B84B] transition-colors duration-200">
                   linkedin.com/in/sisi-gong
+                </p>
+              </div>
+            </a>
+
+            {/* ── Phone number link ── */}
+            <a
+              href="tel:+16479832668"
+              id="contact-phone-link"
+              className="flex items-center gap-4 group
+                         px-5 py-4 rounded-lg border border-[#E8B84B]/15 bg-[#112233]
+                         hover:border-[#E8B84B]/50 hover:bg-[#0f1e30]
+                         transition-all duration-200"
+              aria-label="Call Sisi Gong"
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                           bg-[#E8B84B]/10 group-hover:bg-[#E8B84B]/20 transition-colors duration-200"
+              >
+                <Phone size={18} className="text-[#E8B84B]" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p className="text-xs text-[#DDD8CF]/50 font-inter uppercase tracking-wider mb-0.5">
+                  Phone
+                </p>
+                <p className="text-[#F5F0E8] font-inter text-sm font-medium
+                              group-hover:text-[#E8B84B] transition-colors duration-200">
+                  647-983-2668
                 </p>
               </div>
             </a>

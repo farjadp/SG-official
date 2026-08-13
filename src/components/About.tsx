@@ -10,6 +10,8 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
+/* ── عکس واقعی سیسی گانگ در /public/sisi-photo.jpg قرار داره ── */
+
 export default function About() {
   return (
     <section
@@ -49,24 +51,15 @@ export default function About() {
                 className="w-full h-full rounded-full overflow-hidden
                            bg-[#112233] flex items-center justify-center"
               >
-                {/* 
-                  Replace the initials block below with an <Image> tag
-                  once a real photo is available.
-                  Example:
-                  <Image
-                    src="/sisi-photo.jpg"
-                    alt="Sisi Gong"
-                    fill
-                    className="object-cover"
-                  />
-                */}
-                <span
-                  className="font-playfair text-5xl font-bold text-[#E8B84B]
-                             select-none"
-                  aria-hidden="true"
-                >
-                  SG
-                </span>
+                {/* ── عکس واقعی سیسی گانگ ── */}
+                <Image
+                  src="/sisi-photo.jpg"
+                  alt="Sisi Gong — Program Manager and Ecosystem Builder"
+                  fill
+                  className="object-cover object-top"
+                  priority
+                  sizes="(max-width: 768px) 208px, 256px"
+                />
               </div>
             </div>
 
