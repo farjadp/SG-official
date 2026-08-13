@@ -3,14 +3,15 @@
    Assembles every section in scroll order and wraps them in the page shell.
    ───────────────────────────────────────────────────────────────────────────── */
 
-import Navbar     from "@/components/Navbar";
-import Hero       from "@/components/Hero";
-import Impact     from "@/components/Impact";
-import About      from "@/components/About";
-import Experience from "@/components/Experience";
-import Expertise  from "@/components/Expertise";
-import Contact    from "@/components/Contact";
-import Footer     from "@/components/Footer";
+import Navbar          from "@/components/Navbar";
+import Hero             from "@/components/Hero";
+import Impact           from "@/components/Impact";
+import About            from "@/components/About";
+import Experience       from "@/components/Experience";
+import Expertise        from "@/components/Expertise";
+import ResumeDownload   from "@/components/ResumeDownload";
+import Contact          from "@/components/Contact";
+import Footer           from "@/components/Footer";
 
 /* ── Root page — single scroll layout ── */
 export default function Home() {
@@ -33,6 +34,9 @@ export default function Home() {
 
       {/* ── Skill / expertise pills ── */}
       <Expertise />
+
+      {/* ── Resume download card ── */}
+      <ResumeDownload />
 
       {/* ── Contact form + links ── */}
       <Contact />
